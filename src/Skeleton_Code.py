@@ -1,4 +1,5 @@
 # to access the html content of a single property url
+from typing import Self
 import requests 
 
 # to select parts of an XML or HTML using BeautifulSoup
@@ -10,41 +11,68 @@ import re
 # to build a dictionary form a string
 import json 
  
-class HouseApartmentScraping:
+class HouseApartmentScraping():
     
-    def __init__(self, url):
-        self.url = url
+    def __init__(self):
+        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+              
+        #self.house_dict = house_dict()
         
-        self.html = requests.get(self.url).content
-        self.soup = BeautifulSoup(self.html,'html.parser')
+       # self.property_ID = property_ID()
+       # self.locality_name = self.locality_name()
+       # self.postal_code = self.postal_code()
+        # self.price = self.price()
+        #self.type_property = self.type_property()
+        #self.subtype = self.subtype()
+        #self.type_sale = self.type_sale()
+        #self.num_rooms = self.num_rooms()
+        #self.living_area = self.living_area()
+        #self.equipped_kitchen = self.equipped_kitchen()
+        #self.furnished = self.furnished()
+        #self.open_fire = self.open_fire()
+        #self.terrace_area = self.terrace_area()
+        #self.garden_area = self.garden_area()
+        #self.surface_good = self.surface_good()
+        #self.num_facade = self.num_facade()
+        #self.pool = self.pool()
+        #self.state = self.state()
+        self.property_info = {}
         
-        self.house_dict = self.house_dict()
+    def listing_list(self, url, soup):
+        """Method for extracting the following information of the house: property ID, postcode, price, living area.
+        """
+        html = requests.get(self.url).content
+        soup = BeautifulSoup(html,'html.parser')
+        listings = []
+        for listing in soup:
+            for elem in soup.find_all("li", attrs = {"class":"search-results__item"}):
+                listing = elem.get("href")
+                listings.append(listing)
+    
+    def first_details(self,url):
+        html = requests.get(url).content
+        soup = BeautifulSoup(html,'html.parser')
+       # for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
+        #    self.property_info["Property_ID"] = elem
+        for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
+            print(elem2)
+       # print(self.property_info)
+            
+        #for elem in soup.find_all()   
         
-        self.property_ID = self.property_ID()
-        self.locality = self.locality()
-        self.postal_code = self.postal_code()
-        self.price = self.price()
-        self.type_property = self.type_property()
-        self.subtype = self.subtype()
-        self.type_sale = self.type_sale()
-        self.num_rooms = self.num_rooms()
-        self.living_area = self.living_area()
-        self.equipped_kitchen = self.equipped_kitchen()
-        self.furnished = self.furnished()
-        self.open_fire = self.open_fire()
-        self.terrace_area = self.terrace_area()
-        self.garden_area = self.garden_area()
-        self.surface_good = self.surface_good()
-        self.num_facade = self.num_facade()
-        self.pool = self.pool()
-        self.state = self.state()
+                
+                
+example=HouseApartmentScraping()
+example.first_details('https://www.immoweb.be/en/classified/apartment-block/for-sale/forest/1190/11120343')
 
-    # Store all houses urls in a csv file
-    with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
-        for page_url in houses_url:
-            pass
-        for url in page_url:
-            file.write(url+'\n')
+                
+  
+   def to_csv(self, filepath):
+      with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
+          for page_url in houses_url:
+              pass
+          for url in page_url:
+              file.write(url+'\n')
 
     def remove_duplicates(self, filepath):
         pass
@@ -54,4 +82,4 @@ class HouseApartmentScraping:
 
     def remove_empty_rows(self, filepath):
         pass
-
+        
