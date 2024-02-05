@@ -21,7 +21,7 @@ class HouseApartmentScraping:
         self.house_dict = self.house_dict()
         
         self.property_ID = self.property_ID()
-        self.locality_name = self.locality_name()
+        self.locality = self.locality()
         self.postal_code = self.postal_code()
         self.price = self.price()
         self.type_property = self.type_property()
@@ -38,7 +38,20 @@ class HouseApartmentScraping:
         self.num_facade = self.num_facade()
         self.pool = self.pool()
         self.state = self.state()
-        
-        
-        
-   
+
+    # Store all houses urls in a csv file
+    with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
+        for page_url in houses_url:
+            pass
+        for url in page_url:
+            file.write(url+'\n')
+
+    def remove_duplicates(self, filepath):
+        pass
+
+    def clean_data(self, filepath):
+        pass
+
+    def remove_empty_rows(self, filepath):
+        pass
+
