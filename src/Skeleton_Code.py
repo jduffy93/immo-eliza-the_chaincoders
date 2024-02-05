@@ -66,13 +66,20 @@ example=HouseApartmentScraping()
 example.first_details('https://www.immoweb.be/en/classified/apartment-block/for-sale/forest/1190/11120343')
 
                 
-            
+  
+   def to_csv(self, filepath):
+      with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
+          for page_url in houses_url:
+              pass
+          for url in page_url:
+              file.write(url+'\n')
+
+    def remove_duplicates(self, filepath):
+        pass
+
+    def clean_data(self, filepath):
+        pass
+
+    def remove_empty_rows(self, filepath):
+        pass
         
-            
-            
-        
-        
-        
-        
-        
-   
