@@ -11,6 +11,8 @@ import re
 # to build a dictionary form a string
 import json 
 
+import re
+
 # We use Selenium as we are scraping a webpage which uses javascript
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -22,9 +24,9 @@ from selenium.webdriver.support import expected_conditions as EC # used to add a
 from selenium.webdriver.remote.command import Command # First package to deal with shadow roots
 from selenium.webdriver.remote.shadowroot import ShadowRoot # Second package to deal with shadow roots
 
-class HouseApartmentScraping():
+class Scraper():
     
-    def __init__(self):
+    def __init__(self, url):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
               
         #self.house_dict = house_dict()
@@ -65,33 +67,70 @@ class HouseApartmentScraping():
     def first_details(self,url):
         html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
-        print(soup)
-        #for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
-        #    self.property_info["Property_ID"] = elem
-        for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
-            print(elem2)
-       # print(self.property_info)
-            
-        #for elem in soup.find_all()   
-            
-
+        #print(soup)
+        import re
+    
+        for elem in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
+            self.property_info["Property_ID"] = re.sub(r'\D', '', elem.text.strip())  # Extract only digits
+        
+        for elem2 in soup.find_all("span", attrs={"class": "classified__information--address-row"}):
+            self.property_info["Postal_Code"] = re.sub(r'\D', '', elem2.text.strip())  # Extract only digits
+        
+        for elem3 in soup.find_all("td", attrs={"class": "classified-table__header"}):
+            self.property_info["Living_area"] = re.sub(r'\D', '', elem3.text.strip())  # Extract only digits
+        
+        print(self.property_info)
+        
     def get_details(self, url):
         '''Method to extract Postal Code from Immoweb using Selenium'''
+        from selenium import webdriver
 
-        driver = webdriver.Chrome() # Using Chrome because apparently Firefox has issues when it comes to shadow roots
-        #wait = WebDriverWait(driver, 10) # Testing first way to solve error
+        # Initialize the WebDriver
+        driver = webdriver.Chrome()
+
+        # Navigate to the webpage
         driver.get(url)
-        #shadow = Command().GET_SHADOW_ROOT
+        driver.implicitly_wait(20)
+        # Execute JavaScript to access elements within the Shadow DOM
+        element_inside_shadow_dom = driver.execute_script('return document.getElementById("usercentrics-root").shadowRoot.querySelector(\'button[data-testid="uc-accept-all-button"]\')')
+        driver.implicitly_wait(20)
+        # Now, you can interact with the element
+        if element_inside_shadow_dom:
+            # Perform actions on the element, for example, click on it
+            element_inside_shadow_dom.click()
+        else:
+            print("Element inside Shadow DOM not found.")
 
+        # Close the WebDriver
+        driver.quit()
+
+
+        
+        
+        #from selenium import webdriver
+
+        # Execute JavaScript to find the Shadow DOM element and click on the button
+        
+        #driver = webdriver.Chrome() # Using Chrome because apparently Firefox has issues when it comes to shadow roots
+        #wait = WebDriverWait(driver, 10) # Testing first way to solve error
+        #driver.get(url)
+        #shadow = Command().GET_SHADOW_ROOT
+        #driver.execute_script('''
+            #var shadowHost = document.getElementById("usercentrics-root");
+            #var shadowRoot = shadowHost.shadowRoot;
+            #var button = shadowRoot.querySelector("#uc-accept-all-button");
+            #button.click();
+        #''')
         #driver.implicitly_wait(10) # Testing secondway to solve error
         #wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-testid='uc-accept-all-button']")))
+        #cookie_button =WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#uc-accept-all-button")))
+        #shadow_host = driver.find_element(By.ID, "usercentrics-root")
+        #shadow_root = shadow_host.shadow_root
 
-        shadow_host = driver.find_element(By.ID, "usercentrics-root")
-        shadow_root = shadow_host.shadow_root
-
-        cookie_button = shadow_root.find_element(By.CSS_SELECTOR, "#uc-accept-all-button") # <- Error occurs here
+       # cookie_button = shadow_root.find_element(By.CSS_SELECTOR, "#uc-accept-all-button") # <- Error occurs here
         #cookie_button = driver.find_element(By.XPATH, "//div[@data-testid='uc-accept-all-button']")
-        cookie_button.click()
+        #cookie_button.click()
+        #driver.quit()
 
 
 
