@@ -142,6 +142,3 @@ class HouseApartmentScraping():
               #pass
           #for url in page_url:
               #file.write(url+'\n')
-        
-                
-  
