@@ -10,7 +10,18 @@ import re
 
 # to build a dictionary form a string
 import json 
- 
+
+# We use Selenium as we are scraping a webpage which uses javascript
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait # Used to add a wait condition
+from selenium.webdriver.support import expected_conditions as EC # used to add a wait condition
+
+# Shadow roots, don't know which package we actually need
+from selenium.webdriver.remote.command import Command # First package to deal with shadow roots
+from selenium.webdriver.remote.shadowroot import ShadowRoot # Second package to deal with shadow roots
+
 class HouseApartmentScraping():
     
     def __init__(self):
@@ -37,7 +48,8 @@ class HouseApartmentScraping():
         #self.pool = self.pool()
         #self.state = self.state()
         self.property_info = {}
-        
+
+
     def listing_list(self, url, soup):
         """Method for extracting the following information of the house: property ID, postcode, price, living area.
         """
@@ -48,38 +60,59 @@ class HouseApartmentScraping():
             for elem in soup.find_all("li", attrs = {"class":"search-results__item"}):
                 listing = elem.get("href")
                 listings.append(listing)
-    
+
+
     def first_details(self,url):
-        html = requests.get(url).content
+        html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
-       # for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
+        print(soup)
+        #for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
         #    self.property_info["Property_ID"] = elem
         for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
             print(elem2)
        # print(self.property_info)
             
         #for elem in soup.find_all()   
-        
-                
-                
-example=HouseApartmentScraping()
-example.first_details('https://www.immoweb.be/en/classified/apartment-block/for-sale/forest/1190/11120343')
+            
 
-                
-  
-   def to_csv(self, filepath):
-      with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
-          for page_url in houses_url:
-              pass
-          for url in page_url:
-              file.write(url+'\n')
+    def get_details(self, url):
+        '''Method to extract Postal Code from Immoweb using Selenium'''
+
+        driver = webdriver.Chrome() # Using Chrome because apparently Firefox has issues when it comes to shadow roots
+        #wait = WebDriverWait(driver, 10) # Testing first way to solve error
+        driver.get(url)
+        #shadow = Command().GET_SHADOW_ROOT
+
+        #driver.implicitly_wait(10) # Testing secondway to solve error
+        #wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-testid='uc-accept-all-button']")))
+
+        shadow_host = driver.find_element(By.ID, "usercentrics-root")
+        shadow_root = shadow_host.shadow_root
+
+        cookie_button = shadow_root.find_element(By.CSS_SELECTOR, "#uc-accept-all-button") # <- Error occurs here
+        #cookie_button = driver.find_element(By.XPATH, "//div[@data-testid='uc-accept-all-button']")
+        cookie_button.click()
+
+
 
     def remove_duplicates(self, filepath):
         pass
 
+
     def clean_data(self, filepath):
         pass
 
+
     def remove_empty_rows(self, filepath):
         pass
+
+
+    #def to_csv(self, filepath):
+      #with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
+          #for page_url in houses_url:
+              #pass
+          #for url in page_url:
+              #file.write(url+'\n')
         
+                
+  
