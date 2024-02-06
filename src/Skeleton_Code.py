@@ -49,6 +49,35 @@ class HouseApartmentScraping():
         #self.state = self.state()
         self.property_info = {}
 
+    def house_dict(self):
+        '''
+        Define a method that creates the dictionary with attributes as keys and houses' values as values
+        '''
+        try:
+            # The relevant info is under a "script" tag in the website
+            result_set = self.soup.find_all('script',attrs={"type" :"text/javascript"})
+            
+            # Iterate through the "script" tags found and keep the one containing the substring "window.classified"
+            # which contains all the relevant info
+            for tag in result_set:
+                if 'window.classified' in str(tag.string):
+                    window_classified = tag
+                    # when we've found the right tag we can stop the loop earlier
+            
+            
+            # Access to the string attribute of the tag and remove leading and trailing whitespaces (strip)break
+            wcs = window_classified.string
+            wcs.strip()
+            
+            # Keep only the part of the string that will be converted into a dictionary
+            wcs = wcs[wcs.find("{"):wcs.rfind("}")+1]
+            
+            # Convert it into a dictionary through json library
+            house_dict = json.loads(wcs)
+            return house_dict
+        except:
+            return None
+        
 
     def listing_list(self, url, soup):
         """Method for extracting the following information of the house: property ID, postcode, price, living area.
