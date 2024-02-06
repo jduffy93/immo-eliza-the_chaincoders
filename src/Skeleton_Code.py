@@ -14,6 +14,8 @@ import json
 # to run the sleep method
 import time
 
+import re
+
 # We use Selenium as we are scraping a webpage which uses javascript
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,13 +23,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait # Used to add a wait condition
 from selenium.webdriver.support import expected_conditions as EC # used to add a wait condition
 
-# Shadow roots, don't know which package we actually need
-from selenium.webdriver.remote.command import Command # First package to deal with shadow roots
-from selenium.webdriver.remote.shadowroot import ShadowRoot # Second package to deal with shadow roots
 
-class HouseApartmentScraping():
+class Scraper():
     
-    def __init__(self):
+    def __init__(self, url):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
               
         #self.house_dict = house_dict()
@@ -97,15 +96,21 @@ class HouseApartmentScraping():
     def first_details(self,url):
         html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
-        print(soup,type(soup))
-        #for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
-        #    self.property_info["Property_ID"] = elem
-        for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
-            print(elem2)
-       # print(self.property_info)
-            
-        #for elem in soup.find_all()   
-            
+
+        #print(soup)
+        import re
+    
+        for elem in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
+            self.property_info["Property_ID"] = re.sub(r'\D', '', elem.text.strip())  # Extract only digits
+        
+        for elem2 in soup.find_all("span", attrs={"class": "classified__information--address-row"}):
+            self.property_info["Postal_Code"] = re.sub(r'\D', '', elem2.text.strip())  # Extract only digits
+        
+        for elem3 in soup.find_all("td", attrs={"class": "classified-table__header"}):
+            self.property_info["Living_area"] = re.sub(r'\D', '', elem3.text.strip())  # Extract only digits
+        
+        print(self.property_info)
+        
 
     def get_details(self, url):
         '''Method to extract Postal Code from Immoweb using Selenium'''
@@ -132,11 +137,11 @@ class HouseApartmentScraping():
         tag_values = [i.text for i in td_tags_values]
         postal_code_text = [i.text for i in postal_code]
 
+        driver.quit()
 
         print(tag_keys)
         print(tag_values)
         print(postal_code_text)
-
 
 
     def remove_duplicates(self, filepath):
