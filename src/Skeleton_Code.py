@@ -9,7 +9,10 @@ from bs4 import BeautifulSoup
 import re 
 
 # to build a dictionary form a string
-import json 
+import json
+
+# to run the sleep method
+import time
 
 # We use Selenium as we are scraping a webpage which uses javascript
 from selenium import webdriver
@@ -94,7 +97,7 @@ class HouseApartmentScraping():
     def first_details(self,url):
         html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
-        print(soup)
+        print(soup,type(soup))
         #for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
         #    self.property_info["Property_ID"] = elem
         for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
@@ -107,20 +110,32 @@ class HouseApartmentScraping():
     def get_details(self, url):
         '''Method to extract Postal Code from Immoweb using Selenium'''
 
-        driver = webdriver.Chrome() # Using Chrome because apparently Firefox has issues when it comes to shadow roots
-        #wait = WebDriverWait(driver, 10) # Testing first way to solve error
+        options = webdriver.ChromeOptions() 
+        options.add_argument("--auto-open-devtools-for-tabs")
+        options.add_experimental_option("detach", True)
+
+        driver = webdriver.Chrome(options=options)
         driver.get(url)
-        #shadow = Command().GET_SHADOW_ROOT
 
-        #driver.implicitly_wait(10) # Testing secondway to solve error
-        #wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-testid='uc-accept-all-button']")))
+        time.sleep(5)
 
-        shadow_host = driver.find_element(By.ID, "usercentrics-root")
-        shadow_root = shadow_host.shadow_root
+        element = driver.execute_script("""return document.querySelector('#usercentrics-root').shadowRoot.querySelector('div div div div div div div div div div div button[data-testid="uc-accept-all-button"]')""")
+        element.click()
 
-        cookie_button = shadow_root.find_element(By.CSS_SELECTOR, "#uc-accept-all-button") # <- Error occurs here
-        #cookie_button = driver.find_element(By.XPATH, "//div[@data-testid='uc-accept-all-button']")
-        cookie_button.click()
+        driver.maximize_window()
+
+        postal_code = driver.find_elements(By.XPATH, "//span[@class='classified__information--address-row']")
+        th_tags_keys = driver.find_elements(By.XPATH, "//tbody[@class='classified-table__body']//th")
+        td_tags_values = driver.find_elements(By.XPATH, "//tbody[@class='classified-table__body']//td")
+
+        tag_keys = [i.text for i in th_tags_keys]
+        tag_values = [i.text for i in td_tags_values]
+        postal_code_text = [i.text for i in postal_code]
+
+
+        print(tag_keys)
+        print(tag_values)
+        print(postal_code_text)
 
 
 
