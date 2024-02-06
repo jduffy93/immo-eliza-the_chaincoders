@@ -9,7 +9,10 @@ from bs4 import BeautifulSoup
 import re 
 
 # to build a dictionary form a string
-import json 
+import json
+
+# to run the sleep method
+import time
 
 import re
 
@@ -20,9 +23,6 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait # Used to add a wait condition
 from selenium.webdriver.support import expected_conditions as EC # used to add a wait condition
 
-# Shadow roots, don't know which package we actually need
-from selenium.webdriver.remote.command import Command # First package to deal with shadow roots
-from selenium.webdriver.remote.shadowroot import ShadowRoot # Second package to deal with shadow roots
 
 class Scraper():
     
@@ -51,6 +51,35 @@ class Scraper():
         #self.state = self.state()
         self.property_info = {}
 
+    def house_dict(self):
+        '''
+        Define a method that creates the dictionary with attributes as keys and houses' values as values
+        '''
+        try:
+            # The relevant info is under a "script" tag in the website
+            result_set = self.soup.find_all('script',attrs={"type" :"text/javascript"})
+            
+            # Iterate through the "script" tags found and keep the one containing the substring "window.classified"
+            # which contains all the relevant info
+            for tag in result_set:
+                if 'window.classified' in str(tag.string):
+                    window_classified = tag
+                    # when we've found the right tag we can stop the loop earlier
+            
+            
+            # Access to the string attribute of the tag and remove leading and trailing whitespaces (strip)break
+            wcs = window_classified.string
+            wcs.strip()
+            
+            # Keep only the part of the string that will be converted into a dictionary
+            wcs = wcs[wcs.find("{"):wcs.rfind("}")+1]
+            
+            # Convert it into a dictionary through json library
+            house_dict = json.loads(wcs)
+            return house_dict
+        except:
+            return None
+        
 
     def listing_list(self, url, soup):
         """Method for extracting the following information of the house: property ID, postcode, price, living area.
@@ -67,6 +96,7 @@ class Scraper():
     def first_details(self,url):
         html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
+
         #print(soup)
         import re
     
@@ -81,57 +111,37 @@ class Scraper():
         
         print(self.property_info)
         
+
     def get_details(self, url):
         '''Method to extract Postal Code from Immoweb using Selenium'''
-        from selenium import webdriver
 
-        # Initialize the WebDriver
-        driver = webdriver.Chrome()
+        options = webdriver.ChromeOptions() 
+        options.add_argument("--auto-open-devtools-for-tabs")
+        options.add_experimental_option("detach", True)
 
-        # Navigate to the webpage
+        driver = webdriver.Chrome(options=options)
         driver.get(url)
-        driver.implicitly_wait(20)
-        # Execute JavaScript to access elements within the Shadow DOM
-        element_inside_shadow_dom = driver.execute_script('return document.getElementById("usercentrics-root").shadowRoot.querySelector(\'button[data-testid="uc-accept-all-button"]\')')
-        driver.implicitly_wait(20)
-        # Now, you can interact with the element
-        if element_inside_shadow_dom:
-            # Perform actions on the element, for example, click on it
-            element_inside_shadow_dom.click()
-        else:
-            print("Element inside Shadow DOM not found.")
 
-        # Close the WebDriver
+        time.sleep(5)
+
+        element = driver.execute_script("""return document.querySelector('#usercentrics-root').shadowRoot.querySelector('div div div div div div div div div div div button[data-testid="uc-accept-all-button"]')""")
+        element.click()
+
+        driver.maximize_window()
+
+        postal_code = driver.find_elements(By.XPATH, "//span[@class='classified__information--address-row']")
+        th_tags_keys = driver.find_elements(By.XPATH, "//tbody[@class='classified-table__body']//th")
+        td_tags_values = driver.find_elements(By.XPATH, "//tbody[@class='classified-table__body']//td")
+
+        tag_keys = [i.text for i in th_tags_keys]
+        tag_values = [i.text for i in td_tags_values]
+        postal_code_text = [i.text for i in postal_code]
+
         driver.quit()
 
-
-        
-        
-        #from selenium import webdriver
-
-        # Execute JavaScript to find the Shadow DOM element and click on the button
-        
-        #driver = webdriver.Chrome() # Using Chrome because apparently Firefox has issues when it comes to shadow roots
-        #wait = WebDriverWait(driver, 10) # Testing first way to solve error
-        #driver.get(url)
-        #shadow = Command().GET_SHADOW_ROOT
-        #driver.execute_script('''
-            #var shadowHost = document.getElementById("usercentrics-root");
-            #var shadowRoot = shadowHost.shadowRoot;
-            #var button = shadowRoot.querySelector("#uc-accept-all-button");
-            #button.click();
-        #''')
-        #driver.implicitly_wait(10) # Testing secondway to solve error
-        #wait.until(EC.presence_of_element_located((By.XPATH, "//div[@data-testid='uc-accept-all-button']")))
-        #cookie_button =WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "#uc-accept-all-button")))
-        #shadow_host = driver.find_element(By.ID, "usercentrics-root")
-        #shadow_root = shadow_host.shadow_root
-
-       # cookie_button = shadow_root.find_element(By.CSS_SELECTOR, "#uc-accept-all-button") # <- Error occurs here
-        #cookie_button = driver.find_element(By.XPATH, "//div[@data-testid='uc-accept-all-button']")
-        #cookie_button.click()
-        #driver.quit()
-
+        print(tag_keys)
+        print(tag_values)
+        print(postal_code_text)
 
 
     def remove_duplicates(self, filepath):
