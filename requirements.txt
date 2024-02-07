@@ -1,6 +1,4 @@
 beautifulsoup4==4.12.3
 requests==2.31.0
 selenium==4.17.2
-webdriver>=3.14.1
 pandas==2.2.0
-json==2.10.1
