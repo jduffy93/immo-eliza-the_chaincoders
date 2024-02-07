@@ -6,10 +6,16 @@ import re
 import json
 
 class Scraper():
-    def __init__(self, url:str):
-        self.url = url
-        self.req = requests.Session().get(url)
+    '''Docstring here'''
+
+    def __init__(self):
+        self.list_of_details = []
         
+
+    def check_status(self, url: str):
+        self.url = url
+        self.req = requests.Session().get(self.url)
+
         if self.req.status_code != 200:
             print(f"{self.req.status_code}: Website could not be reached!")
             
@@ -38,7 +44,6 @@ class Scraper():
     
     def listing_details(self):
         soup = bs(self.req.content,'html.parser')
-        #print(soup)
         property_details = {}  
         
         for row in soup.find_all("tr", attrs = {"class":"classified-table__row"}):
@@ -58,13 +63,25 @@ class Scraper():
 
         property_details["Postcode"] = re.search(r'/(?P<postcode>\d{4})/',self.url).group('postcode')
         
-        #for elem2 in soup.find_all("div", attrs={"class":"classified__information--address"}):
-            #property_details["Postal_Code"] = #re.sub(r'\D', '', elem2.text.strip())
-    
-        return property_details 
+
+        self.list_of_details.append(property_details)
         
-#TEST        
-house = Scraper("https://www.immoweb.be/en/classified/apartment-block/for-sale/forest/1190/11120343")
-#print(house.listing_details())
-        
-print(house.listing_listings())
+
+    def remove_duplicates(self, filepath):
+        pass
+
+
+    def clean_data(self, filepath):
+        pass
+
+    def remove_empty_rows(self, filepath):
+        pass
+
+
+    #def to_csv(self, filepath):
+      #with open('../csv_files/houses_apartments_urls.csv', 'w') as file:
+          #for page_url in houses_url:
+              #pass
+          #for url in page_url:
+              #file.write(url+'\n')
+
