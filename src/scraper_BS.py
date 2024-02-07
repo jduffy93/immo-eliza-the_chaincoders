@@ -83,12 +83,6 @@ class Scraper():
         #Type of sale:
         for elem_new in selenium_soup.find_all('span', class_='flag-list__text'):
             property_details["Type_of_sale"] = elem_new[0].text
-                            
-        # for elem_annuity in selenium_soup.find('span', class_='flag-list__item flag-list__item--secondary'):
-        #     if elem_annuity:
-        #         property_details["Type_of_sale"] = "Life annuity"
-        #     if elem_annuity:
-        #         property_details["Type_of_sale"] = None
 
         #table details:
         for row in soup.find_all("tr", attrs = {"class":"classified-table__row"}):
