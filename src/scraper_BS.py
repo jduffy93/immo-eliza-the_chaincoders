@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup as bs
 import re
 import json
 
-
 class Scraper():
     def __init__(self, url:str):
         self.url = url
@@ -25,6 +24,7 @@ class Scraper():
         #total_items = pagination_list.find("span", attrs = {"class": "sr-only"})
         #total_pages = int(total_items[-2].text.strip())
         #print("Total pages:", total_pages)
+        
         for i in range(2): #to be changed to the total_pages var:
             url = f"{root_url}&page={i}"
             #print(url)
@@ -35,8 +35,6 @@ class Scraper():
                 listings.append(listing)
         print(len(listings))
         return listings
-    
-        
     
     def listing_details(self):
         soup = bs(self.req.content,'html.parser')
