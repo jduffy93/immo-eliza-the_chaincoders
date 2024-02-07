@@ -14,6 +14,8 @@ import json
 # to run the sleep method
 import time
 
+import re
+
 # We use Selenium as we are scraping a webpage which uses javascript
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,13 +23,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.wait import WebDriverWait # Used to add a wait condition
 from selenium.webdriver.support import expected_conditions as EC # used to add a wait condition
 
-# Shadow roots, don't know which package we actually need
-from selenium.webdriver.remote.command import Command # First package to deal with shadow roots
-from selenium.webdriver.remote.shadowroot import ShadowRoot # Second package to deal with shadow roots
 
-class HouseApartmentScraping():
+class Scraper():
     
-    def __init__(self):
+    def __init__(self, url):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
               
         #self.house_dict = house_dict()
@@ -52,6 +51,35 @@ class HouseApartmentScraping():
         #self.state = self.state()
         self.property_info = {}
 
+    def house_dict(self):
+        '''
+        Define a method that creates the dictionary with attributes as keys and houses' values as values
+        '''
+        try:
+            # The relevant info is under a "script" tag in the website
+            result_set = self.soup.find_all('script',attrs={"type" :"text/javascript"})
+            
+            # Iterate through the "script" tags found and keep the one containing the substring "window.classified"
+            # which contains all the relevant info
+            for tag in result_set:
+                if 'window.classified' in str(tag.string):
+                    window_classified = tag
+                    # when we've found the right tag we can stop the loop earlier
+            
+            
+            # Access to the string attribute of the tag and remove leading and trailing whitespaces (strip)break
+            wcs = window_classified.string
+            wcs.strip()
+            
+            # Keep only the part of the string that will be converted into a dictionary
+            wcs = wcs[wcs.find("{"):wcs.rfind("}")+1]
+            
+            # Convert it into a dictionary through json library
+            house_dict = json.loads(wcs)
+            return house_dict
+        except:
+            return None
+        
 
     def listing_list(self, url, soup):
         """Method for extracting the following information of the house: property ID, postcode, price, living area.
@@ -68,15 +96,21 @@ class HouseApartmentScraping():
     def first_details(self,url):
         html = requests.get(url).text
         soup = BeautifulSoup(html,'html.parser')
-        print(soup,type(soup))
-        #for elem in soup.find_all("div", attrs = {"class":"classified__header--immoweb-code"}):
-        #    self.property_info["Property_ID"] = elem
-        for elem2 in soup.find_all("span", attrs = {"class":"classified__information--address-row"}):
-            print(elem2)
-       # print(self.property_info)
-            
-        #for elem in soup.find_all()   
-            
+
+        #print(soup)
+        import re
+    
+        for elem in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
+            self.property_info["Property_ID"] = re.sub(r'\D', '', elem.text.strip())  # Extract only digits
+        
+        for elem2 in soup.find_all("span", attrs={"class": "classified__information--address-row"}):
+            self.property_info["Postal_Code"] = re.sub(r'\D', '', elem2.text.strip())  # Extract only digits
+        
+        for elem3 in soup.find_all("td", attrs={"class": "classified-table__header"}):
+            self.property_info["Living_area"] = re.sub(r'\D', '', elem3.text.strip())  # Extract only digits
+        
+        print(self.property_info)
+        
 
     def get_details(self, url):
         '''Method to extract Postal Code from Immoweb using Selenium'''
@@ -103,11 +137,11 @@ class HouseApartmentScraping():
         tag_values = [i.text for i in td_tags_values]
         postal_code_text = [i.text for i in postal_code]
 
+        driver.quit()
 
         print(tag_keys)
         print(tag_values)
         print(postal_code_text)
-
 
 
     def remove_duplicates(self, filepath):
@@ -128,6 +162,3 @@ class HouseApartmentScraping():
               #pass
           #for url in page_url:
               #file.write(url+'\n')
-        
-                
-  
