@@ -13,10 +13,15 @@ if __name__ == "__main__":
 
     scraper = Scraper()
 
+    scraper.listing_listings()
+
+    #for url in scraper.list_of_urls:
     for url in list_of_urls:
         scraper.check_status(url)
 
-        print(url)
+        #print(url)
         scraper.listing_details() # Beautifulsoup
+    
+    scraper.clean_data()
 
-    print(scraper.list_of_details)
+    #print(scraper.list_of_details)
