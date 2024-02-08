@@ -100,9 +100,10 @@ class Scraper():
                           'Garden',
                           'Conformity certification for fuel tanks',
                           'Planning permission obtained']
+        
         self.df['Planning permission obtained'] = (self.df['Planning permission obtained'] == 'Yes').astype(int)
         
-        #print(self.df)
+        print(self.df)
         #print(self.df[['Planning permission obtained']])
         
         print(self.df.columns)
