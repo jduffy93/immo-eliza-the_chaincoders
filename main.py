@@ -1,18 +1,14 @@
 #from src.Skeleton_Code import Scraper
 from src.scraper_BS import Scraper
 
-
 if __name__ == "__main__":
     
-    list_of_urls = [
-        "https://www.immoweb.be/en/classified/apartment-block/for-sale/forest/1190/11120343",
-        "https://www.immoweb.be/en/classified/house/for-sale/faimes/4317/11109944",
-        "https://www.immoweb.be/en/classified/villa/for-sale/woluwe-saint-lambert/1200/11118328",
-        "https://www.immoweb.be/en/classified/bungalow/for-sale/waterloo/1410/11122971"
-    ]
+    ROOT_URL = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+    scraper = Scraper(ROOT_URL,333)
 
-    scraper = Scraper()
-    scraper.listing_listings()
+    list_of_details = scraper.scrape()
+
+    print(list_of_details)
 
     #for url in scraper.list_of_urls:
         #scraper.check_status(url)
