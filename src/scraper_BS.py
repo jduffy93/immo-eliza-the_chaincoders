@@ -1,7 +1,7 @@
 #imports
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+#from selenium import webdriver
+#from selenium.webdriver.chrome.service import Service
+#from selenium.webdriver.chrome.options import Options
 import requests
 from bs4 import BeautifulSoup as bs
 import re
@@ -18,7 +18,7 @@ class Scraper():
 
         if self.req.status_code != 200:
             print(f"{self.req.status_code}: Website could not be reached!")
-            
+        '''    
         #accessing the url with Selenium:
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
@@ -27,7 +27,7 @@ class Scraper():
         driver.get(url)
         self.page_source = driver.page_source
         driver.quit()
-        
+        '''
     def listing_listings(self):
         root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
         html = requests.Session().get(root_url)
@@ -54,8 +54,8 @@ class Scraper():
     def listing_details(self):
         soup = bs(self.req.content,'html.parser')
         property_details = {}  
-        selenium_soup = bs(self.page_source, features="html.parser")
-        print(selenium_soup.prettify())
+        #selenium_soup = bs(self.page_source, features="html.parser")
+        #print(selenium_soup.prettify())
         
         #Immoweb ID:
         for elem_id in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
@@ -117,5 +117,3 @@ class Scraper():
           #for url in page_url:
               #file.write(url+'\n')
 
-test = Scraper()
-test.listing_details
