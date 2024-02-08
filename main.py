@@ -12,11 +12,12 @@ if __name__ == "__main__":
     ]
 
     scraper = Scraper()
+    scraper.listing_listings()
 
-    for url in list_of_urls:
-        scraper.check_status(url)
+    #for url in scraper.list_of_urls:
+        #scraper.check_status(url)
 
-        print(url)
-        scraper.listing_details() # Beautifulsoup
+        #print(url)
+        #scraper.listing_details() # Beautifulsoup
 
-    print(scraper.list_of_details)
+    # print(scraper.list_of_details)

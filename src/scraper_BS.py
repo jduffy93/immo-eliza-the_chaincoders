@@ -10,7 +10,7 @@ class Scraper():
 
     def __init__(self):
         self.list_of_details = []
-        
+        self.list_of_urls = []   
 
     def check_status(self, url: str):
         self.url = url
@@ -31,20 +31,44 @@ class Scraper():
         #total_pages = int(total_items[-2].text.strip())
         #print("Total pages:", total_pages)
         
-        for i in range(2): #to be changed to the total_pages var:
+        """
+        page = 300  # Add a variable named "page" and assign it a value
+        while True:
+            url = f"{self.base_url}?countries=BE&page={page}"
+            req = requests.get(url)
+
+            soup = bs(req.content,'html.parser')
+
+            # Check if a specific element that indicates the end of results is present
+            # Replace 'css_selector' with the actual CSS selector
+            if soup.select('css_selector'):
+                break  # If the element is found, break the loop 
+        """
+        for i in range(1000): #to be changed to the total_pages var:
             url = f"{root_url}&page={i}"
             #print(url)
             page_req = requests.Session().get(url)
-            page_soup = bs(page_req.content, "html.parser")
-            for listing in page_soup.find_all("a", attrs = {"class":"card__title-link"}):
-                listing = listing.get("href")
-                listings.append(listing)
-        print(len(listings))
-        return listings
+            if page_req.status_code != 200:
+                print(f"{page_req.status_code}: Website could not be reached!")
+                break
+            else:
+                page_soup = bs(page_req.content, "html.parser")
+                for listing in page_soup.find_all("a", attrs = {"class":"card__title-link"}):
+                    listing = listing.get("href")
+                    self.list_of_urls.append(listing)
+            print(i)        
+        print(len(self.list_of_urls))
+        #saving list of urls to a file, so as not torun until concurrency is implemented
+
+        with open('urls.txt', 'w') as file:
+            for line in self.list_of_urls:
+                file.write(line)
+                file.write('\n')    
+        # return listings
     
     def listing_details(self):
         soup = bs(self.req.content,'html.parser')
-        property_details = {}  
+        property_details = {}     
         
         for row in soup.find_all("tr", attrs = {"class":"classified-table__row"}):
             key_element = row.find("th")
