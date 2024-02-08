@@ -1,9 +1,13 @@
 #imports
-#from selenium import webdriver
-#from selenium.webdriver.chrome.service import Service
-#from selenium.webdriver.chrome.options import Options
+
+import concurrent.futures
+import re
+import threading
+import time
+
 import requests
 from bs4 import BeautifulSoup as bs
+
 import re
 
 import json
@@ -11,57 +15,46 @@ import pandas as pd
 import numpy as np
 from IPython.display import display
 
+thread_local = threading.local()
+
 class Scraper():
     '''Docstring here'''
 
-    def __init__(self):
-        self.list_of_urls = []
+    def init(self) -> None:
+        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+        self.pages = 10
         self.list_of_details = []
-        
-    def check_status(self, url: str):
-        self.url = url
-        self.req = requests.Session().get(self.url)
-
-        if self.req.status_code != 200:
-            print(f"{self.req.status_code}: Website could not be reached!")
-        '''    
-        #accessing the url with Selenium:
-        options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        driver = webdriver.Chrome(options=options)
-        
-        driver.get(url)
-        self.page_source = driver.page_source
-        driver.quit()
-        '''
-    def listing_listings(self):
-        root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
-        #html = requests.Session().get(root_url)
-        #soup = bs(html.content,'html.parser')
-        #listings = []
-        
-        #for i in soup.find_all("a", attrs= {"class":"pagination__link button button--text button--size-small"}):
-            #print(i)
-        #total_items = pagination_list.find("span", attrs = {"class": "sr-only"})
-        #total_pages = int(total_items[-2].text.strip())
-        #print("Total pages:", total_pages)
-
-        for i in range(2): #to be changed to the total_pages var:
-            url = f"{root_url}&page={i}"
-            #print(url)
-            page_req = requests.Session().get(url)
-            page_soup = bs(page_req.content, "html.parser")
-            for listing in page_soup.find_all("a", attrs = {"class":"card__title-link"}):
-                listing = listing.get("href")
-                self.list_of_urls.append(listing)
-        print(len(self.list_of_urls))
 
     
-    def listing_details(self):
-        soup = bs(self.req.content,'html.parser')
-        property_details = {}  
-        #selenium_soup = bs(self.page_source, features="html.parser")
-        #print(selenium_soup.prettify())
+    def _get_all_listings_details(self):
+        """Get the details of all the listings."""
+        urls = self._get_listings_urls()
+       
+        with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
+           for result in  executor.map(self._get_listing_details, urls):
+                if result:
+                    self.list_of_details.append(result)
+
+    
+    def _get_session(self):
+        """Get a session for the current thread."""
+        if not hasattr(thread_local, "session"):
+            thread_local.session = requests.Session()
+        return thread_local.session
+
+    
+    def _get_listing_details(self,url:str):
+        """Get the details of a listing from a given URL."""
+        session = self._get_session()
+        req = session.get(url)
+        
+        if req.status_code != 200:
+            print(f"{req.status_code}: Website could not be reached!")
+            return
+            
+        soup = bs(req.content,'html.parser')
+        property_details = {}
+
         
         #Immoweb ID:
         for elem_id in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
@@ -70,7 +63,7 @@ class Scraper():
         #Locality:
         property_details["Locality"] = (self.url.split('/')[-3]).capitalize()
         
-        #Postal code:
+        #Postal code check this!:
         property_details["Postcode"] = re.search(r'/(?P<postcode>\d{4})/',self.url).group('postcode')          
         
         #Price:
@@ -100,9 +93,59 @@ class Scraper():
                     value = value_element.contents[0].strip()
                     property_details[key] = value
 
-        return property_details 
+        for elem in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
+            property_details["Property_ID"] = re.sub(r'\D', '', elem.text.strip())  # Extract only digits
+        postcode_search = re.search(r'/(?P<postcode>\d{4})/',url)
         
-        #self.list_of_details.append(property_details)
+        if postcode_search:
+            property_details["Postcode"] = postcode_search.group('postcode')
+        else:
+            property_details["Postcode"] = None
+            print("Postcode not found")
+            
+
+        #print("found details for: ", property_details["Property_ID"])
+        return property_details
+    
+
+        
+    def _get_listings_urls(self):
+        """Scrape the website for listings."""
+        list_of_urls = []
+        
+        start_time = time.time()
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
+            for result in executor.map(self._get_page_url, range(1, self.pages+1)):
+                if result:
+                    list_of_urls.extend(result)
+
+        duration = time.time() - start_time
+        
+        print(f"found total of {len(list_of_urls)} urls in {duration} seconds")
+        return list_of_urls
+        #saving list of urls to a file, so as not torun until concurrency is implemented
+
+    def _get_page_url(self, page:int):
+        """Get the URL of a specific page."""
+        url = f"{self.root_url}&page={page}"
+        #print(url)
+        page_req = requests.Session().get(url)
+        
+        if page_req.status_code != 200:
+            print(f"{page_req.status_code}: Website could not be reached!")
+            return None
+        else:
+            list_of_urls = []
+            page_soup = bs(page_req.content, "html.parser")
+            for listing in page_soup.find_all("a", attrs = {"class":"card__title-link"}):
+                listing = listing.get("href")
+                list_of_urls.append(listing)
+                
+        print(page)
+        print("total number of urls on page: ", len(list_of_urls))
+        return list_of_urls
+
         
 
     def remove_duplicates(self, filepath):
@@ -141,6 +184,7 @@ class Scraper():
         #print(self.df[['Planning permission obtained']])
         
         print(self.df.columns)
+
 
     def remove_empty_rows(self, filepath):
         pass
