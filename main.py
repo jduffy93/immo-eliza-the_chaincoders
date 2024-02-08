@@ -9,7 +9,7 @@ if __name__ == "__main__":
     list_of_details = scraper.scrape()
 
     print(list_of_details)
-
+    #scraper = Scraper()
     #for url in scraper.list_of_urls:
         #scraper.check_status(url)
 
