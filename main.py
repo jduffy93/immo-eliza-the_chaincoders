@@ -15,3 +15,10 @@ if __name__ == "__main__":
         #scraper.listing_details() # Beautifulsoup
 
     # print(scraper.list_of_details)
+    
+    scraper.clean_data()
+
+
+    print(scraper.listing_details())
+    #print(scraper.list_of_details)
+

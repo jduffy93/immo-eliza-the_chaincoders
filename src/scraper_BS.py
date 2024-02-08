@@ -8,7 +8,15 @@ import time
 import requests
 from bs4 import BeautifulSoup as bs
 
+import re
+
+import json
+import pandas as pd
+import numpy as np
+from IPython.display import display
+
 thread_local = threading.local()
+
 class Scraper():
     '''Docstring here'''
 
@@ -46,7 +54,36 @@ class Scraper():
             
         soup = bs(req.content,'html.parser')
         property_details = {}
+
         
+        #Immoweb ID:
+        for elem_id in soup.find_all("div", attrs={"class": "classified__header--immoweb-code"}):
+            property_details["Property_ID"] = re.sub(r'\D', '', elem_id.text.strip())  # Extract only digits
+        
+        #Locality:
+        property_details["Locality"] = (self.url.split('/')[-3]).capitalize()
+        
+        #Postal code check this!:
+        property_details["Postcode"] = re.search(r'/(?P<postcode>\d{4})/',self.url).group('postcode')          
+        
+        #Price:
+        for elem_price in soup.find_all("p", attrs = {"class":"classified__price"}):
+            property_details["Price"] = re.sub(r'\D', '', elem_price.text.split())
+            
+        #Subtype of property:
+        property_details["Subtype_of_property"] = (self.url.split('/')[-5]).capitalize()
+        
+        #Type of property:
+        if property_details["Subtype_of_property"] == "House" or property_details["Subtype_of_property"] == "Apartment":
+            property_details["Type_of_property"] = property_details["Subtype_of_property"]
+        else:
+            property_details["Type_of_property"] = "House"
+            
+        #Type of sale:
+        for elem_new in selenium_soup.find_all('span', class_='flag-list__text'):
+            property_details["Type_of_sale"] = elem_new[0].text
+
+        #table details:
         for row in soup.find_all("tr", attrs = {"class":"classified-table__row"}):
             key_element = row.find("th")
             if key_element:
@@ -63,9 +100,10 @@ class Scraper():
         if postcode_search:
             property_details["Postcode"] = postcode_search.group('postcode')
         else:
-            property_details["Postcode"] = "N/A"
+            property_details["Postcode"] = None
             print("Postcode not found")
             
+
         #print("found details for: ", property_details["Property_ID"])
         return property_details
     
@@ -107,16 +145,48 @@ class Scraper():
         print(page)
         print("total number of urls on page: ", len(list_of_urls))
         return list_of_urls
+
         
 
-    #def remove_duplicates(self, filepath):
+    def remove_duplicates(self, filepath):
         pass
 
 
-    #def clean_data(self, filepath):
-        pass
+    def clean_data(self):
+        self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace([np.nan], [None])
+        
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.max_rows', None)
 
-    #def remove_empty_rows(self, filepath):
+        #print(self.df)
+        binary_columns = ['Dining room',
+                          'Office',
+                          'Furnished',
+                          'Gas, water & electricity',
+                          'Double glazing',
+                          'Subdivision permit',
+                          'Possible priority purchase right',
+                          'Proceedings for breach of planning regulations',
+                          'Tenement building',
+                          'Basement',
+                          'Terrace',
+                          'Attic',
+                          'Thermic solar panels',
+                          'Laundry room',
+                          'Flat land',
+                          'Garden',
+                          'Conformity certification for fuel tanks',
+                          'Planning permission obtained']
+        
+        self.df['Planning permission obtained'] = (self.df['Planning permission obtained'] == 'Yes').astype(int)
+        
+        print(self.df)
+        #print(self.df[['Planning permission obtained']])
+        
+        print(self.df.columns)
+
+
+    def remove_empty_rows(self, filepath):
         pass
 
 
