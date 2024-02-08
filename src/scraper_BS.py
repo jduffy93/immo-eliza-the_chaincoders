@@ -1,5 +1,3 @@
-#imports
-
 import concurrent.futures
 import re
 import threading
@@ -8,12 +6,9 @@ import time
 import requests
 from bs4 import BeautifulSoup as bs
 
-import re
-
-import json
 import pandas as pd
 import numpy as np
-#from IPython.display import display
+
 
 thread_local = threading.local()
 
@@ -22,7 +17,7 @@ class Scraper():
 
     def __init__(self):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
-        self.pages = 10
+        self.pages = 332
         self.list_of_details = []
 
     
@@ -32,8 +27,10 @@ class Scraper():
        
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
            for result in  executor.map(self._get_listing_details, urls):
-                if result:
+                if result:# != None:
                     self.list_of_details.append(result)
+                #else:
+                    #break
 
     
     def _get_session(self):
@@ -64,7 +61,7 @@ class Scraper():
         property_details["Locality"] = (url.split('/')[-3]).capitalize()
         
         #Postal code check this!:
-        property_details["Postal_code"] = re.search(r'/(?P<postcode>\d{4})/',url).group('postcode')          
+        #property_details["Postal_code"] = re.search(r'/(?P<postcode>\d{4})/',url).group('postcode')          
         
         #Price:
         for elem_price in soup.find_all("p", attrs = {"class":"classified__price"}):
@@ -153,10 +150,12 @@ class Scraper():
     def clean_data(self):
         self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace([np.nan], [None])
         
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.max_rows', None)
+        self.df.to_csv('data/details_raw.csv')
 
-        #print(self.df)
+        pd.set_option('display.max_columns', None)  # Displays all columns in terminal
+        #pd.set_option('display.max_rows', None)  # Displays all rows in terminal
+
+
         binary_columns = ['Dining room',
                           'Office',
                           'Furnished',
@@ -164,8 +163,10 @@ class Scraper():
                           'Double glazing',
                           'Subdivision permit',
                           'Possible priority purchase right',
+                          'Heat pump',
+                          'Photovoltaic solar panels',
                           'Proceedings for breach of planning regulations',
-                          'Tenement building',
+                          'Tenement building',  
                           'Basement',
                           'Terrace',
                           'Attic',
@@ -174,15 +175,21 @@ class Scraper():
                           'Flat land',
                           'Garden',
                           'Conformity certification for fuel tanks',
-                          'Planning permission obtained']
+                          'Planning permission obtained',
+                          'Common water heater',
+                          'Sea view'
+                          ] # Would be better if this could be generated instead of specified
         
-        self.df['Planning permission obtained'] = (self.df['Planning permission obtained'] == 'Yes').astype(int)
-        
+        self.df[binary_columns] = (self.df[binary_columns] == 'Yes').astype(int)
+
+        self.df = self.df.drop_duplicates()
+
         print(self.df)
-        #print(self.df[['Planning permission obtained']])
+        print(self.df[['Attic']])
         
         print(self.df.columns)
 
+        self.df.to_csv('data/details_clean.csv')
 
     def remove_empty_rows(self, filepath):
         pass

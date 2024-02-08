@@ -6,7 +6,7 @@ if __name__ == "__main__":
     scraper = Scraper()
     list_of_details = scraper._get_all_listings_details()
 
-    print(scraper.list_of_details)
+    #print(scraper.list_of_details)
     print(len(scraper.list_of_details))
     #scraper = Scraper()
     #for url in scraper.list_of_urls:
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     # print(scraper.list_of_details)
     
-    #scraper.clean_data()
+    scraper.clean_data()
 
 
     
