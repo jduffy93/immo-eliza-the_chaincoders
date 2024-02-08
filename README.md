@@ -47,12 +47,12 @@ The output will be a data.csv file that is saved in the working folder in your c
 
 ## Roadmap
 
-Further improvements would include finding a solution to extract the "Type of sale" feature from the Immoweb website (New buildings and annuity sales, etc..). 
-Implementing a dynamic range of the pages scraped (instead of having a fixed limit of 1000)
-Automating the binary column conversion.
-Increasing the pool of website that the program is able to scrape. 
+Further improvements would include finding a solution to extract the "Type of sale" feature from the Immoweb website (New buildings and annuity sales, etc..). \n
+Implementing a dynamic range of the pages scraped (instead of having a fixed limit of 1000). \n
+Automating the binary column conversion. \n
+Increasing the pool of website that the program is able to scrape. \n
 
 ## Outlook
 
-The dataset will later be used to create a prediction model of the property prices in Belgium
+The dataset will later be used to create a prediction model of the property prices in Belgium. 
 
