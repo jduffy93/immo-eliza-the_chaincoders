@@ -13,14 +13,14 @@ import re
 import json
 import pandas as pd
 import numpy as np
-from IPython.display import display
+#from IPython.display import display
 
 thread_local = threading.local()
 
 class Scraper():
     '''Docstring here'''
 
-    def init(self) -> None:
+    def __init__(self):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
         self.pages = 10
         self.list_of_details = []
@@ -61,17 +61,17 @@ class Scraper():
             property_details["Property_ID"] = re.sub(r'\D', '', elem_id.text.strip())  # Extract only digits
         
         #Locality:
-        property_details["Locality"] = (self.url.split('/')[-3]).capitalize()
+        property_details["Locality"] = (url.split('/')[-3]).capitalize()
         
         #Postal code check this!:
-        property_details["Postcode"] = re.search(r'/(?P<postcode>\d{4})/',self.url).group('postcode')          
+        property_details["Postal_code"] = re.search(r'/(?P<postcode>\d{4})/',url).group('postcode')          
         
         #Price:
         for elem_price in soup.find_all("p", attrs = {"class":"classified__price"}):
-            property_details["Price"] = re.sub(r'\D', '', elem_price.text.split())
+            property_details["Price"] = elem_price.text.split()
             
         #Subtype of property:
-        property_details["Subtype_of_property"] = (self.url.split('/')[-5]).capitalize()
+        property_details["Subtype_of_property"] = (url.split('/')[-5]).capitalize()
         
         #Type of property:
         if property_details["Subtype_of_property"] == "House" or property_details["Subtype_of_property"] == "Apartment":
@@ -79,9 +79,7 @@ class Scraper():
         else:
             property_details["Type_of_property"] = "House"
             
-        #Type of sale:
-        for elem_new in selenium_soup.find_all('span', class_='flag-list__text'):
-            property_details["Type_of_sale"] = elem_new[0].text
+        #Type of sale
 
         #table details:
         for row in soup.find_all("tr", attrs = {"class":"classified-table__row"}):
@@ -117,7 +115,7 @@ class Scraper():
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
             for result in executor.map(self._get_page_url, range(1, self.pages+1)):
-                if result:
+                if result: #!= None:
                     list_of_urls.extend(result)
 
         duration = time.time() - start_time
