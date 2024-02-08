@@ -2,13 +2,11 @@
 from src.scraper_BS import Scraper
 
 if __name__ == "__main__":
-    
-    ROOT_URL = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
-    scraper = Scraper(ROOT_URL,333)
 
-    list_of_details = scraper.scrape()
+    scraper = Scraper()
+    list_of_details = scraper._get_all_listings_details()
 
-    print(list_of_details)
+    print(scraper.list_of_details)
     #scraper = Scraper()
     #for url in scraper.list_of_urls:
         #scraper.check_status(url)
