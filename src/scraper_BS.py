@@ -11,8 +11,26 @@ import numpy as np
 
 thread_local = threading.local()
 
-class Scraper():
-    '''Docstring here'''
+class ImmowebScraper():
+    '''
+    The ImmowebScraper object gets details related to about 20,000 property listings from the Immoweb website, and has methods to:
+        - get all the property listing urls for a page on Immoweb
+        - extract the details of a property from a specific url
+        - use threading for the previous two methods
+        - transform the dataset into a dataframe, do some preliminary cleaning and output the raw and clean data
+        - save some terminal messages to a txt
+
+    Attributes
+    ----------
+    root_url : str
+        This is where we store the root url.
+    pages : int
+        This is where we store the number of Immoweb pages-1.
+    terminal_outputs : list
+        This is where we store potentially useful terminal outputs, which will later be saved as a txt file.
+    list_of_details : list
+        This is where we store the dictionaries containing the details of each property.
+    '''
 
     def __init__(self):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
@@ -21,33 +39,33 @@ class Scraper():
         self.list_of_details = []
 
     
-    def _get_all_listings_details(self):
+    def get_all_listings_details(self) -> None:
         """Get the details of all the listings."""
-        urls = self._get_listings_urls()
+        urls = self.get_listings_urls()
        
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
-           for result in  executor.map(self._get_listing_details, urls):
+           for result in  executor.map(self.get_listing_details, urls):
                 if result:
                     self.list_of_details.append(result)
 
     
-    def _get_session(self):
+    def get_session(self) -> None:
         """Get a session for the current thread."""
         if not hasattr(thread_local, "session"):
             thread_local.session = requests.Session()
         return thread_local.session
 
     
-    def _get_listing_details(self, url: str) -> None:
+    def get_listing_details(self, url: str) -> None:
         """Get the details of a listing from a given URL."""
-        session = self._get_session()
+        session = self.get_session()
         req = session.get(url)
         
-        if req.status_code != 200:
+        if req.status_code != 200: # Checks whether url is available, and prints/saves to output file
             print(f"{req.status_code}: Website could not be reached! Here is the Url: {url}")
             self.terminal_outputs.append(f"{req.status_code}: Website could not be reached! Here is the Url: {url}\n")
             return
-            
+        
         soup = bs(req.content,'html.parser')
         property_details = {}
 
@@ -101,25 +119,25 @@ class Scraper():
         return property_details
     
 
-    def _get_listings_urls(self):
+    def get_listings_urls(self) -> list:
         """Scrape the website for listings."""
         list_of_urls = []
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
-            for result in executor.map(self._get_page_url, range(1, self.pages+1)):
+            for result in executor.map(self.get_page_url, range(1, self.pages+1)):
                 if result: #!= None:
                     list_of_urls.extend(result)
 
         return list_of_urls
 
 
-    def _get_page_url(self, page:int):
+    def get_page_url(self, page: int) -> list:
         """Get the URL of a specific page."""
         url = f"{self.root_url}&page={page}"
 
         page_req = requests.Session().get(url)
         
-        if page_req.status_code != 200:
+        if page_req.status_code != 200: # Checks whether url is available, and prints/saves to output file
             print(f"{page_req.status_code}: Website could not be reached! Here is the url: {url}")
             self.terminal_outputs.append(f"{page_req.status_code}: Website could not be reached! Here is the url: {url}\n")
             return None
@@ -135,7 +153,7 @@ class Scraper():
         return list_of_urls
 
 
-    def clean_data(self):
+    def clean_data(self) -> None:
         """
         Clean the scraped data and convert it into a DataFrame.
 
@@ -179,11 +197,12 @@ class Scraper():
 
         self.terminal_outputs.append(f"List of column names: \n{self.df.columns.tolist()}\n")
 
-        self.df.to_csv('data/details_clean.csv') # Save 'clean' data
+        self.df.drop_duplicates(subset=['Url'], inplace=True) #Drop duplicate rows based on Url column
+
+        self.df.to_csv('data/details_clean.csv') # Save clean data
 
 
-    #### CHECK TERMINAL OUTPUT FOR ALL ERROR CODES
-    def write_terminal(self):
+    def write_terminal(self) -> None:
         """Save terminal output to a text file"""
 
         with open("src/terminal_output.txt", "w", encoding="utf-8") as output:
