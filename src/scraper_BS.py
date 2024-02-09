@@ -22,7 +22,7 @@ class Scraper():
 
     def __init__(self):
         self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
-        self.pages = 10
+        self.pages = 1000
         self.list_of_details = []
 
     
@@ -64,7 +64,7 @@ class Scraper():
         property_details["Locality"] = (url.split('/')[-3]).capitalize()
         
         #Postal code check this!:
-        property_details["Postal_code"] = re.search(r'/(?P<postcode>\d{4})/',url).group('postcode')          
+        #property_details["Postal_code"] = re.search(r'/(?P<postcode>\d{4})/',url).group('postcode')          
         
         #Price:
         for elem_price in soup.find_all("p", attrs = {"class":"classified__price"}):
@@ -115,8 +115,10 @@ class Scraper():
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
             for result in executor.map(self._get_page_url, range(1, self.pages+1)):
-                if result: #!= None:
+                if result != None:
                     list_of_urls.extend(result)
+                else:
+                    break
 
         duration = time.time() - start_time
         
