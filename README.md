@@ -5,11 +5,9 @@ The Immoweb scraper is a Python program designed to extract information about pr
 
 ## Features
 * Scrapes Immoweb website for sale properties
-* Creates a dictionary for each listing and its details
-* Organizes all listings' details into a dictionary
-* Cleans the data by removing duplicates, null values, and empty lines
-* Transforms the data into a pandas DataFrame
-* Saves the data into a CSV file for easy access and analysis
+* Extracts the details for each listing
+* Cleans the data by removing duplicates and empty lines
+* Saves the data to CSV files 
 
 ## Dependencies
 
@@ -39,20 +37,38 @@ pip install -r requirements.txt
 
 ## Running immo-eliza-scraping-the-chaincoders
 
-You can use the program by running ``` python main.py ```
+Make sure you are in the correct directory (/immo-eliza-scraping-the-chaincoders), if not go to the directory:
+
+ ```cmd
+ cd directory/immo-eliza-scraping-the-chaincoders
+ ```
+
+Run immo-eliza-scraping-the-chaincoders from main:
+
+```cmd
+python main.py
+```
+
 
 ## Output
 
-The output will be a data.csv file that is saved in the working folder in your computer. 
+The ouptuts for the data are saved in the ```data/``` folder as CSV files. Extra information with certain errors are saved in ```src/terminal_output.txt```.
+
+Output preview:
+
+![Scraper-output](./assets/output_snippet.png)
 
 ## Roadmap
 
-Further improvements would include finding a solution to extract the "Type of sale" feature from the Immoweb website (New buildings and annuity sales, etc..). \
-Implementing a dynamic range of the pages scraped (instead of having a fixed limit of 1000). \
-Automating the binary column conversion. \
-Increasing the pool of website that the program is able to scrape. \
+* Further improvements would include finding a solution to extract the "Type of sale" feature from the Immoweb website (New buildings and annuity sales, etc..). 
+* Implementing a dynamic range of the pages scraped (instead of having a fixed limit of 333). 
+* Automating the binary column conversion. 
+* Increasing the pool of websites that the program is able to scrape.
 
 ## Outlook
 
-The dataset will later be used to create a prediction model of the property prices in Belgium. 
+
+The next step is to properly clean and perform exploratory data analysis on the dataset.
+
+The dataset will later be used to create a predictive model of the property prices in Belgium.
 
