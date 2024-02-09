@@ -125,7 +125,7 @@ class ImmowebScraper():
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=60) as executor:
             for result in executor.map(self.get_page_url, range(1, self.pages+1)):
-                if result: #!= None:
+                if result:
                     list_of_urls.extend(result)
 
         return list_of_urls
