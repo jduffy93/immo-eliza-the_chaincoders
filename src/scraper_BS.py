@@ -33,7 +33,7 @@ class ImmowebScraper():
     '''
 
     def __init__(self):
-        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE&isALifeAnnuitySale=false"
         self.pages = 332
         self.terminal_outputs = []
         self.list_of_details = []
@@ -168,7 +168,7 @@ class ImmowebScraper():
         # Replace missing values with None
         self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace(np.nan, None)
         
-        self.df.to_csv('data/details_raw.csv') # Save raw data
+        self.df.to_csv('data/raw/details_raw.csv') # Save raw data
 
         # List of column names that have binary (Yes, No) values
         binary_columns = ['Dining room',
@@ -200,7 +200,7 @@ class ImmowebScraper():
 
         self.df.drop_duplicates(subset=['Url'], inplace=True) #Drop duplicate rows based on Url column
 
-        self.df.to_csv('data/details_clean.csv') # Save clean data
+        self.df.to_csv('data/clean/details_clean.csv') # Save clean data
 
 
     def write_terminal(self) -> None:
