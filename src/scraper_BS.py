@@ -33,7 +33,7 @@ class ImmowebScraper():
     '''
 
     def __init__(self):
-        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE&isALifeAnnuitySale=false"
         self.pages = 332
         self.terminal_outputs = []
         self.list_of_details = []
@@ -78,7 +78,9 @@ class ImmowebScraper():
         
         # Price:
         for elem_price in soup.find_all("p", attrs = {"class":"classified__price"}):
-            property_details["Price"] = elem_price.text.split()
+
+            property_details["Price"] = elem_price.find("span", attrs = {"class":"sr-only"}).text.rstrip('€')
+
             
         # Subtype of property:
         property_details["Subtype_of_property"] = (url.split('/')[-5]).capitalize()
@@ -164,9 +166,9 @@ class ImmowebScraper():
 
         # Convert the list of property details into a DataFrame
         # Replace missing values with None
-        self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace([np.nan], [None])
+        self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace(np.nan, None)
         
-        self.df.to_csv('data/details_raw.csv') # Save raw data
+        self.df.to_csv('data/raw/details_raw.csv') # Save raw data
 
         # List of column names that have binary (Yes, No) values
         binary_columns = ['Dining room',
@@ -184,7 +186,6 @@ class ImmowebScraper():
                           'Laundry room',
                           'Flat land',
                           'Garden',
-                          'Conformity certification for fuel tanks',
                           'Planning permission obtained'
                           ] # Would be better if this could be automatically generated instead of manually  specified
         
@@ -199,7 +200,7 @@ class ImmowebScraper():
 
         self.df.drop_duplicates(subset=['Url'], inplace=True) #Drop duplicate rows based on Url column
 
-        self.df.to_csv('data/details_clean.csv') # Save clean data
+        self.df.to_csv('data/clean/details_clean.csv') # Save clean data
 
 
     def write_terminal(self) -> None:
