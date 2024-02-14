@@ -34,7 +34,7 @@ class ImmowebScraper:
     """
 
     def __init__(self):
-        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE"
+        self.root_url = "https://www.immoweb.be/en/search/house/for-sale?countries=BE&isALifeAnnuitySale=false"
         self.pages = 332
         self.terminal_outputs = []
         self.list_of_details = []
@@ -195,6 +195,7 @@ class ImmowebScraper:
 
         # Convert the list of property details into a DataFrame
         # Replace missing values with None
+<<<<<<< HEAD
         self.df = (
             pd.DataFrame([listing for listing in self.list_of_details], dtype=object)
             .fillna(np.nan)
@@ -202,6 +203,11 @@ class ImmowebScraper:
         )
 
         self.df.to_csv("data/raw/details_raw.csv")  # Save raw data
+=======
+        self.df = pd.DataFrame([listing for listing in self.list_of_details],dtype=object).fillna(np.nan).replace(np.nan, None)
+        
+        self.df.to_csv('data/raw/details_raw.csv') # Save raw data
+>>>>>>> 2fae34bf5114de82cf98efd431c480f30deaa712
 
         # List of column names that have binary (Yes, No) values
         binary_columns = [
@@ -240,9 +246,15 @@ class ImmowebScraper:
             f"List of column names: \n{self.df.columns.tolist()}\n"
         )
 
+<<<<<<< HEAD
         self.df.drop_duplicates(
             subset=["Url"], inplace=True
         )  # Drop duplicate rows based on Url column
+=======
+        self.df.drop_duplicates(subset=['Url'], inplace=True) #Drop duplicate rows based on Url column
+
+        self.df.to_csv('data/clean/details_clean.csv') # Save clean data
+>>>>>>> 2fae34bf5114de82cf98efd431c480f30deaa712
 
         self.df.to_csv("data/clean/details_clean.csv")  # Save clean data
 
