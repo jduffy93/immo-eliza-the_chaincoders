@@ -211,5 +211,3 @@ class ImmowebScraper():
                 output.write(line)
 
 
-
-#test
