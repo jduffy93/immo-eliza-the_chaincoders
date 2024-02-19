@@ -200,7 +200,7 @@ class ImmowebScraper():
 
         self.df.drop_duplicates(subset=['Url'], inplace=True) #Drop duplicate rows based on Url column
 
-        self.df.to_csv('data/clean/details_clean.csv') # Save clean data
+        self.df.to_csv('data/clean/details_clean_initial.csv') # Save clean data
 
 
     def write_terminal(self) -> None:
