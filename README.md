@@ -1,7 +1,13 @@
 # Property Price Scraper
 
+
 ## Description
-The Immoweb scraper is a Python program designed to extract information about properties for sale from the Immoweb website. It retrieves data from the website, organizes it into dictionaries, cleans the data, transforms it into a structured format, and saves it into a CSV file for further analysis.
+The Immoweb scraper is a Python program designed to extract information about properties for sale from the Immoweb website and is divided into four phases where phase three and four will be described later on in our separate repositories. It retrieves data from the website, organizes it into dictionaries, cleans the data, transforms it into a structured format, and saves it into a CSV file for further analysis.
+
+Phase 1 Data Clean the dataset so that it does not contain any duplicates, blank spaces or errors. 
+
+Phase 2 Exploratory Data Analysis where vizualization is explored, ephasizing on the Structure of the data (rows and columns), correlation between the variables to each other and to price, and explore Which variables have the greatest and least influence on the price.
+
 
 ## Features
 * Scrapes Immoweb website for sale properties
@@ -9,12 +15,17 @@ The Immoweb scraper is a Python program designed to extract information about pr
 * Cleans the data by removing duplicates and empty lines
 * Saves the data to CSV files 
 
+
 ## Dependencies
 
 * Python 3.12.1
 * requests 2.31.0
 * beautifulsoup4 4.12.3
 * pandas 2.2.0
+* numpy
+* seaborn
+* matplotlib
+
 
 ## Installation
 
@@ -58,17 +69,8 @@ Output preview:
 
 ![Scraper-output](./assets/output_snippet.png)
 
-## Roadmap
-
-* Further improvements would include finding a solution to extract the "Type of sale" feature from the Immoweb website (New buildings and annuity sales, etc..). 
-* Implementing a dynamic range of the pages scraped (instead of having a fixed limit of 333). 
-* Automating the binary column conversion. 
-* Increasing the pool of websites that the program is able to scrape.
 
 ## Outlook
-
-
-The next step is to properly clean and perform exploratory data analysis on the dataset.
 
 The dataset will later be used to create a predictive model of the property prices in Belgium.
 
